@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark">
+  <title>Exam Seating Orchestrator</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --bg-gradient: radial-gradient(circle at top, #eef2ff 0%, #f5f7fb 45%, #eef2ff 100%);
+      --card: rgba(255, 255, 255, 0.95);
+      --text: #0f172a;
+      --muted: #475467;
+      --border: rgba(15, 23, 42, 0.12);
+      --accent: #6366f1;
+      --accent-strong: #4f46e5;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+      color: var(--text);
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    :root[data-theme='dark'] {
+      --bg: #05060a;
+      --bg-gradient: radial-gradient(circle at top, #101827 0%, #05060a 60%);
+      --card: rgba(15, 23, 42, 0.85);
+      --text: #f8fafc;
+      --muted: #cbd5f5;
+      --border: rgba(148, 163, 184, 0.24);
+      --accent: #8b5cf6;
+      --accent-strong: #a78bfa;
+      --success: #22c55e;
+      --danger: #f87171;
+      --shadow: 0 25px 70px rgba(2, 6, 23, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(14, 165, 233, 0.12));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 2.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.5;
+    }
+
+    .theme-toggle {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s ease;
+    }
+    .theme-toggle:active {
+      transform: scale(0.98);
+    }
+
+    main {
+      display: grid;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .subtext {
+      color: var(--muted);
+      margin-top: 8px;
+      margin-bottom: 28px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+
+    input,
+    textarea,
+    button,
+    select {
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: white;
+      box-shadow: 0 15px 25px rgba(79, 70, 229, 0.25);
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .status-banner {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .status-banner.success {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--success);
+    }
+
+    .status-banner.error {
+      background: rgba(248, 113, 113, 0.15);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-strong);
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+
+    .rooms-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .room-card {
+      flex: 1 1 240px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .room-card .room-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .room-delete {
+      border: none;
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--danger);
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .metric label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .metric strong {
+      font-size: 1.8rem;
+    }
+
+    .table-wrapper {
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+    }
+
+    thead {
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    th,
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .diag-panel {
+      margin-top: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.04);
+    }
+
+    .diag-panel h4 {
+      margin: 0 0 12px;
+    }
+
+    .diag-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .diag-item {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.95rem;
+    }
+
+    .diag-item.error {
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.4);
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      margin-top: 32px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 720px) {
+      .hero {
+        padding: 24px;
+      }
+      .card {
+        padding: 22px;
+      }
+      table {
+        font-size: 0.92rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">ExamOps</div>
+        <h1>Exam Seating Orchestrator</h1>
+        <p>Upload rosters, define capacities, and generate a clash-free seating layout with room-level intelligence. Toggle between light and dark studios to suit your control center.</p>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button">Dark mode</button>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="eyebrow">Step 01</div>
+        <h2>Upload Students</h2>
+        <p class="subtext">CSV headers must include <code>roll,name,subject,preferred_room</code>. Load the bundled dataset to experiment instantly.</p>
+        <div class="grid-2">
+          <div>
+            <label for="student-file">CSV File</label>
+            <input type="file" id="student-file" accept=".csv" />
+            <button id="upload-btn" class="primary" style="margin-top:12px;">Upload &amp; parse</button>
+          </div>
+          <div>
+            <label for="student-text">Paste CSV</label>
+            <textarea id="student-text" placeholder="roll,name,subject&#10;1001,Alice,BBA"></textarea>
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+              <button id="paste-btn" class="primary" type="button">Submit CSV text</button>
+              <button id="sample-btn" class="secondary" type="button">Load sample</button>
+            </div>
+          </div>
+        </div>
+        <div id="student-status" class="status-banner"></div>
+        <div id="student-summary" style="display:none; margin-top:24px;">
+          <h3 style="margin:0;">Loaded students</h3>
+          <p class="subtext" id="student-count">0</p>
+          <ul id="subject-list" class="rooms-preview" style="padding:0; list-style:none;"></ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="eyebrow">Step 02</div>
+        <h2>Define Rooms</h2>
+        <p class="subtext">Set benches and seats per bench. Hit sync to persist definitions to the API cache.</p>
+        <form id="room-form" class="grid-2">
+          <div>
+            <label for="room-id">Room ID</label>
+            <input id="room-id" type="text" placeholder="R1" required />
+          </div>
+          <div>
+            <label for="room-name">Room Name</label>
+            <input id="room-name" type="text" placeholder="Auditorium" required />
+          </div>
+          <div>
+            <label for="room-benches">Benches</label>
+            <input id="room-benches" type="number" min="1" value="10" required />
+          </div>
+          <div>
+            <label for="room-seats">Seats per bench</label>
+            <input id="room-seats" type="number" min="1" value="2" required />
+          </div>
+          <div style="grid-column:1 / -1; display:flex; gap:12px; flex-wrap:wrap;">
+            <button type="submit" class="primary">Add / Update room</button>
+            <button type="button" id="sync-rooms" class="secondary">Sync rooms to backend</button>
+          </div>
+        </form>
+        <div class="rooms-preview" id="rooms-preview" style="margin-top:20px;"></div>
+      </section>
+
+      <section class="card">
+        <div class="eyebrow">Step 03</div>
+        <h2>Generate Seating Plan</h2>
+        <p class="subtext">Deterministic greedy scheduler. Provide an optional date and RNG seed for reproducibility.</p>
+        <div class="grid-2">
+          <div>
+            <label for="session-date">Exam date</label>
+            <input type="date" id="session-date" />
+          </div>
+          <div>
+            <label for="seed">Seed (optional)</label>
+            <input type="number" id="seed" placeholder="e.g. 42" />
+          </div>
+        </div>
+        <button id="schedule-btn" class="primary" style="margin-top:18px;">Run scheduler</button>
+        <div id="schedule-status" class="status-banner"></div>
+        <div id="diagnostics-panel" class="diag-panel" style="display:none;">
+          <h4>Diagnostics</h4>
+          <ul class="diag-list" id="diagnostics-list"></ul>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <label>Students loaded</label>
+            <strong id="metric-students">0</strong>
+          </div>
+          <div class="metric">
+            <label>Rooms configured</label>
+            <strong id="metric-rooms">0</strong>
+          </div>
+          <div class="metric">
+            <label>Total capacity</label>
+            <strong id="metric-capacity">0</strong>
+          </div>
+        </div>
+
+        <div id="results" style="display:none; margin-top:24px;">
+          <h3 style="margin-top:0;">Assignments</h3>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Room</th>
+                  <th>Bench</th>
+                  <th>Seat</th>
+                  <th>Roll</th>
+                  <th>Name</th>
+                  <th>Subject</th>
+                </tr>
+              </thead>
+              <tbody id="assignment-body"></tbody>
+            </table>
+          </div>
+
+          <div class="grid-2" style="margin-top:22px;">
+            <div>
+              <label for="pdf-room-select">Room PDF</label>
+              <select id="pdf-room-select"></select>
+              <button type="button" id="download-room-pdf" class="secondary" style="margin-top:10px;">Download selected room</button>
+            </div>
+            <div>
+              <label>All rooms PDF</label>
+              <button type="button" id="download-all-pdf" class="secondary" style="margin-top:38px;">Download full report</button>
+            </div>
+          </div>
+
+          <h3 style="margin-top:28px;">Room summaries</h3>
+          <div id="summaries" class="rooms-preview"></div>
+        </div>
+      </section>
+
+      <div class="footer-note">
+        Need deeper automation? Mount the API (`server.js`) behind your orchestration layer or connect the CRA client inside <code>frontend/</code>.
+      </div>
+    </main>
+  </div>
+
+  <script src="./scheduler.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
